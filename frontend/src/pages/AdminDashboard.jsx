@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import api from '../api/axios.js'
 import {
   Chart as ChartJS,
@@ -105,7 +106,7 @@ function AdminDashboard() {
                 <VolunteersTab onUpdateStats={loadAdminData} />
               )}
               {activeTab === 'Programs' && (
-                <ProgramsTab onUpdateStats={loadAdminData} />
+                <ProgramsTab onUpdateStats={loadAdminData} onSetGlobalMessage={(m, t) => { setMessage(m); setMessageType(t); }} />
               )}
               {activeTab === 'Applications' && (
                 <ApplicationsTab onUpdateStats={loadAdminData} />
@@ -414,7 +415,7 @@ function VolunteerRow({ volunteer, onUpdate, showActions }) {
   )
 }
 
-function ProgramsTab({ onUpdateStats }) {
+function ProgramsTab({ onUpdateStats, onSetGlobalMessage }) {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [programs, setPrograms] = useState([])
@@ -450,14 +451,17 @@ function ProgramsTab({ onUpdateStats }) {
     setIsEditing(true)
   }
 
-  function handleCloseForm() {
+  function handleCloseForm(successMessage, msgType) {
     setIsEditing(false)
     setEditingProgram(null)
     if (onUpdateStats) onUpdateStats()
+    if (successMessage && onSetGlobalMessage) {
+      onSetGlobalMessage(successMessage, msgType || 'success')
+    }
   }
 
   if (isEditing) {
-    return <ProgramForm program={editingProgram} onClose={handleCloseForm} />
+    return <ProgramForm program={editingProgram} onClose={handleCloseForm} onSetGlobalMessage={onSetGlobalMessage} />
   }
 
   return (
@@ -523,31 +527,14 @@ function ProgramsTab({ onUpdateStats }) {
   )
 }
 
-function ProgramForm({ program, onClose }) {
+function ProgramForm({ program, onClose, onSetGlobalMessage }) {
   const [form, setForm] = useState(
     program || { title: '', category: '', location: '', date: '', description: '' }
   )
   const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState('')
-  const [messageType, setMessageType] = useState('success')
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const isEdit = !!program
-
-  useEffect(() => {
-    if (message) {
-      const timer = setTimeout(() => setMessage(''), 3000)
-      return () => clearTimeout(timer)
-    }
-  }, [message])
-
-  const toastNotification = message && (
-    <div className={`fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-[90%] max-w-md flex items-center justify-center rounded-xl border p-4 text-sm font-medium shadow-2xl backdrop-blur-md ${
-      messageType === 'error' ? 'border-red-400 bg-red-600/95 text-white' : 'border-emerald-500/40 bg-emerald-900/95 text-emerald-400'
-    }`}>
-      <p className="text-base text-center w-full">{message}</p>
-    </div>
-  )
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value })
@@ -556,20 +543,18 @@ function ProgramForm({ program, onClose }) {
   async function handleSubmit(e) {
     e.preventDefault()
     setLoading(true)
-    setMessage('')
     try {
       if (isEdit) {
         await api.patch(`/programs/${program._id}`, form)
-        setMessage('Program updated successfully')
+        onClose('Program updated successfully', 'success')
       } else {
         await api.post('/programs', form)
-        setMessage('Program created successfully')
+        onClose('Program created successfully', 'success')
       }
-      setMessageType('success')
-      setTimeout(onClose, 1500)
     } catch (error) {
-      setMessage(error.response?.data?.msg || 'An error occurred')
-      setMessageType('error')
+      if (onSetGlobalMessage) {
+        onSetGlobalMessage(error.response?.data?.msg || 'An error occurred', 'error')
+      }
     } finally {
       setLoading(false)
     }
@@ -579,12 +564,11 @@ function ProgramForm({ program, onClose }) {
     setLoading(true)
     try {
       await api.delete(`/programs/${program._id}`)
-      setMessage('Program deleted')
-      setMessageType('success')
-      setTimeout(onClose, 1500)
+      onClose('Program deleted', 'success')
     } catch (error) {
-      setMessage(error.response?.data?.msg || 'Could not delete')
-      setMessageType('error')
+      if (onSetGlobalMessage) {
+        onSetGlobalMessage(error.response?.data?.msg || 'Could not delete', 'error')
+      }
     } finally {
       setLoading(false)
     }
@@ -592,7 +576,6 @@ function ProgramForm({ program, onClose }) {
 
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-md">
-      {toastNotification}
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-xl font-bold text-white">{isEdit ? 'Edit Program' : 'Create Program'}</h3>
         <button onClick={onClose} className="text-stone-400 hover:text-white text-sm">✕ Close</button>
@@ -634,8 +617,8 @@ function ProgramForm({ program, onClose }) {
         </div>
       </form>
 
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      {showDeleteConfirm && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-md">
           <div className="w-[90%] max-w-sm rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
             <h3 className="mb-2 text-xl font-bold text-white">Delete Program</h3>
             <p className="mb-6 text-stone-300">Are you sure you want to delete this program? This action cannot be undone.</p>
@@ -644,11 +627,12 @@ function ProgramForm({ program, onClose }) {
                 Cancel
               </button>
               <button onClick={handleDelete} className="rounded-lg bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-500 transition-colors">
-                Yes, Delete
+                {loading ? 'Deleting...' : 'Yes, Delete'}
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
