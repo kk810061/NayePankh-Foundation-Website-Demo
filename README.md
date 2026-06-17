@@ -4,11 +4,23 @@ This is a **Full-Stack MERN Application** built as a submission for an internshi
 
 ## 🔗 Demo
 
-- **Live URL**: [Insert Vercel URL Here]
+- **Live URL**: https://naye-pankh-foundation-website-demo.vercel.app
 
 ## 📸 Screenshots
 
-*(Add your screenshots here)*
+<img width="1807" height="911" alt="image" src="https://github.com/user-attachments/assets/99f50186-d724-444c-90cc-a5f0a82c1fdd" />
+
+<img width="1820" height="922" alt="image" src="https://github.com/user-attachments/assets/ee7a09fc-935b-44e3-a757-cf125b23c158" />
+
+<img width="1821" height="917" alt="image" src="https://github.com/user-attachments/assets/7adbba51-90d9-4bdf-a4c3-a77f0c6e034b" />
+
+<img width="1822" height="922" alt="image" src="https://github.com/user-attachments/assets/0bc1e680-214c-4804-920d-1d09e618de34" />
+
+<img width="1842" height="912" alt="image" src="https://github.com/user-attachments/assets/4b01c24e-18c4-4109-a5fc-f4c50a870678" />
+
+<img width="1836" height="912" alt="image" src="https://github.com/user-attachments/assets/e9d1ce70-b693-423a-bce9-b8b0882e0463" />
+
+
 
 ## 🚀 Features
 
