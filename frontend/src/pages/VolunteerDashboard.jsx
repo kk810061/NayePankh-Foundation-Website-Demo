@@ -44,6 +44,8 @@ function VolunteerDashboard() {
   const [regMessage, setRegMessage] = useState('')
   const [regLoading, setRegLoading] = useState(false)
   
+  const [applications, setApplications] = useState([])
+  const [appLoading, setAppLoading] = useState(false)
   const [appMessage, setAppMessage] = useState('')
 
   useEffect(() => {
