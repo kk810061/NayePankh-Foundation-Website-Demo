@@ -578,7 +578,7 @@ function ProgramForm({ program, onClose, onSetGlobalMessage }) {
     <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl backdrop-blur-md">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-xl font-bold text-white">{isEdit ? 'Edit Program' : 'Create Program'}</h3>
-        <button onClick={onClose} className="text-stone-400 hover:text-white text-sm">✕ Close</button>
+        <button type="button" onClick={() => onClose()} className="text-stone-400 hover:text-white text-sm">✕ Close</button>
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-2">
