@@ -12,7 +12,10 @@ const adminRoute = require('./routes/admin');
 const errorHandler = require('./middleware/error-handler');
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: "https://naye-pankh-foundation-website-demo.vercel.app",
+    credentials: true
+}));
 
 app.use('/api/auth', authRoute);
 app.use('/api/volunteer', volunteerRoute);
