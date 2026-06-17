@@ -7,7 +7,7 @@ const {createProgram, getPrograms, getSingleProgram, updateProgram, deleteProgra
 router.post('/', auth, admin, createProgram);
 router.get('/', getPrograms);
 router.get('/:id', getSingleProgram);
-router.route('/:id', auth, admin).patch(updateProgram).delete(deleteProgram);
+router.route('/:id').patch(auth, admin, updateProgram).delete(auth, admin, deleteProgram);
 
 module.exports = router;
 

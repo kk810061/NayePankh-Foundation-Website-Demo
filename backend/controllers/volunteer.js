@@ -13,10 +13,23 @@ const createVolunteer = async(req, res) => {
 }
 
 const getAllVolunteers = async(req, res) => {
-    const volunteers = await Volunteer.find().populate('user', 'name email');
+    let filter = {};
+    if (req.query.status === 'pending') {
+        filter.status = 'pending';
+    } else if (req.query.status === 'processed') {
+        filter.status = { $ne: 'pending' };
+    }
+    let result = Volunteer.find(filter).sort({updatedAt: -1}).populate('user', 'name email');
+    const totalCount = await Volunteer.countDocuments(filter);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    result = result.skip(skip).limit(limit);
+    const volunteers = await result;
     return res.status(StatusCodes.OK).json({
         volunteers,
-        count: volunteers.length
+        nbHits: volunteers.length,
+        totalCount
     })
 }
 
@@ -29,12 +42,6 @@ const updateVolunteer = async(req, res) => {
     if(!volunteer){
         return res.status(StatusCodes.BAD_REQUEST).json({
             msg: `No volunteer with ID ${volunteerId}`
-        });
-    }
-    if(newstatus === "rejected"){
-        await Volunteer.findByIdAndDelete(volunteerId);
-        return res.json({
-            msg:"Volunteer rejected and removed"
         });
     }
     volunteer.status = newstatus;
@@ -56,4 +63,16 @@ const deleteVolunteer = async(req, res) => {
     res.status(StatusCodes.OK).send();
 }
 
-module.exports = {createVolunteer, getAllVolunteers, updateVolunteer, deleteVolunteer};
+const getMyProfile = async(req, res) => {
+    const volunteer = await Volunteer.findOne({user: req.user.userID}).populate('user', 'name email');
+    if(!volunteer){
+        return res.status(StatusCodes.NOT_FOUND).json({
+            msg: "No volunteer profile found"
+        });
+    }
+    return res.status(StatusCodes.OK).json({
+        volunteer
+    });
+}
+
+module.exports = {createVolunteer, getAllVolunteers, updateVolunteer, deleteVolunteer, getMyProfile};

@@ -15,6 +15,11 @@ const applyProgram = async(req, res) => {
             msg: "Rejected applicants can't apply"
         })
     }
+    if(volunteerProfile.status === 'pending'){
+        return res.status(StatusCodes.FORBIDDEN).json({
+            msg: "Your volunteer profile is pending approval"
+        })
+    }
     const application = {volunteer: volunteerProfile._id, program: programId};
     const checkApplication = await Application.find(application);
     if(checkApplication.length > 0){
@@ -36,7 +41,7 @@ const getMyApplications = async(req, res) => {
             msg: "No volunteer profile found"
         })
     }
-    const applications = await Application.find({volunteer: volunteerProfile._id}).populate('program', 'title description location category');
+    const applications = await Application.find({volunteer: volunteerProfile._id}).sort({createdAt: -1}).populate('program', 'title description location category');
     if(applications.length === 0){
         return res.status(StatusCodes.BAD_REQUEST).json({
             msg: `There are no applications`
@@ -48,9 +53,16 @@ const getMyApplications = async(req, res) => {
 }
 
 const getApplications = async(req, res) => {
-    const applications = await Application.find().populate({
+    let filter = {};
+    if (req.query.status === 'pending') {
+        filter.status = 'pending';
+    } else if (req.query.status === 'processed') {
+        filter.status = { $ne: 'pending' };
+    }
+
+    let result = Application.find(filter).sort({updatedAt: -1}).populate({
         path: 'program',
-        select: 'title description location category',
+        select: 'title description location category date',
         populate: {
             path: 'createdBy',
             select: 'name email role'
@@ -62,9 +74,16 @@ const getApplications = async(req, res) => {
             select: 'name email role'
         }
     });
+    const totalCount = await Application.countDocuments(filter);
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    result = result.skip(skip).limit(limit);
+    const applications = await result;
     res.status(StatusCodes.OK).json({
         applications,
-        count: applications.length
+        nbHits: applications.length,
+        totalCount
     });
 }
 
@@ -79,14 +98,8 @@ const updateApplication = async(req, res) => {
             msg: `No application with ID ${applicationId}`
         });
     }
-    if(newstatus === "rejected"){
-            await Application.findByIdAndDelete(applicationId);
-            return res.json({
-                msg:"Application rejected and removed"
-            });
-        }
-        application.status = newstatus;
-        await application.save();
+    application.status = newstatus;
+    await application.save();
     return res.status(StatusCodes.CREATED).json({
         msg: "Successfully updated",
         application

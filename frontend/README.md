@@ -1,16 +1,56 @@
-# React + Vite
+# NayePankh Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Simple React frontend for the NayePankh volunteer platform.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Vite
+- React
+- React Router
+- Axios
+- Tailwind CSS
 
-## React Compiler
+## Run Locally
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Start the backend first on port `5000`, then run:
 
-## Expanding the ESLint configuration
+```bash
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Open:
+
+```text
+http://127.0.0.1:5173
+```
+
+During local development, Vite proxies `/api` requests to:
+
+```text
+http://localhost:5000
+```
+
+## API URL For Deployment
+
+When deploying the frontend, set this environment variable to your deployed backend URL:
+
+```text
+VITE_API_URL=https://your-render-backend-url.com/api
+```
+
+## Pages
+
+- `/` - Home
+- `/programs` - Program list and apply button
+- `/login` - Login
+- `/register` - Register
+- `/volunteer/dashboard` - Volunteer profile and applications
+- `/admin/dashboard` - Admin stats, volunteers, programs, applications
+
+## Useful Commands
+
+```bash
+npm run lint
+npm run build
+```
