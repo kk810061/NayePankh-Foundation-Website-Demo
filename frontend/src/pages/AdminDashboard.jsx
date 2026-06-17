@@ -530,6 +530,7 @@ function ProgramForm({ program, onClose }) {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [messageType, setMessageType] = useState('success')
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const isEdit = !!program
 
@@ -575,7 +576,6 @@ function ProgramForm({ program, onClose }) {
   }
 
   async function handleDelete() {
-    if (!window.confirm('Are you sure you want to delete this program?')) return
     setLoading(true)
     try {
       await api.delete(`/programs/${program._id}`)
@@ -627,12 +627,29 @@ function ProgramForm({ program, onClose }) {
             {loading ? 'Saving...' : 'Save Program'}
           </button>
           {isEdit && (
-            <button type="button" onClick={handleDelete} disabled={loading} className="rounded-full border border-red-500/30 bg-red-500/10 px-6 py-2 font-bold text-red-400 hover:bg-red-500/20 transition-colors">
+            <button type="button" onClick={() => setShowDeleteConfirm(true)} disabled={loading} className="rounded-full border border-red-500/30 bg-red-500/10 px-6 py-2 font-bold text-red-400 hover:bg-red-500/20 transition-colors">
               Delete
             </button>
           )}
         </div>
       </form>
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-[90%] max-w-sm rounded-2xl border border-white/10 bg-slate-900 p-6 shadow-2xl">
+            <h3 className="mb-2 text-xl font-bold text-white">Delete Program</h3>
+            <p className="mb-6 text-stone-300">Are you sure you want to delete this program? This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button onClick={() => setShowDeleteConfirm(false)} className="rounded-lg px-4 py-2 font-semibold text-stone-400 hover:text-white transition-colors">
+                Cancel
+              </button>
+              <button onClick={handleDelete} className="rounded-lg bg-red-600 px-4 py-2 font-bold text-white hover:bg-red-500 transition-colors">
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
