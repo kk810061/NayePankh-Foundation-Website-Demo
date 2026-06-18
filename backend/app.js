@@ -17,6 +17,10 @@ app.use(cors({
     credentials: true
 }));
 
+app.get("/health", (req, res) => {
+    res.status(200).send("OK");
+});
+
 app.use('/api/auth', authRoute);
 app.use('/api/volunteer', volunteerRoute);
 app.use('/api/programs', programsRoute);
